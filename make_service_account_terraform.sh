@@ -1,6 +1,7 @@
 #!/bin/sh
 #set -eu
 ROOT_DIR=${PWD}
+PROJECT_ID=my-project2-303004
 CONTAINER_NAME="terraform-gcp-container"
 
 #-----------------------------
@@ -9,6 +10,12 @@ CONTAINER_NAME="terraform-gcp-container"
 # terraform コンテナ起動
 docker-compose -f docker-compose.yml stop
 docker-compose -f docker-compose.yml up -d
+
+# デフォルトのサービスアカウント（~.config/gcloud/application_default_credentials.json）でログイン
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "gcloud auth application-default login"
+
+# GCP プロジェクト設定
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "gcloud config set project ${PROJECT_ID}"
 
 # terraform を初期化する。
 docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam/github_actions && terraform init"

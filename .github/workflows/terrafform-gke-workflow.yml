@@ -55,6 +55,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # GitHub レポジトリへのアクセストークンを設定し、GitHub レポジトリへのコメントが可能にする / secrets は、github レポジトリの project の setting > secrets から登録する
       GCP_REGION: "us-central1"
       TERRAFORM_DIR: ${{ matrix.dir }}              # tf ファイルの格納ディレクトリ
+      SERVICE_ACCOUNT: github_actions_service_account@my-project2-303004.iam.gserviceaccount.com                                                              # GitHub Actions 用のサービスアカウント
+      WORKLOAD_IDENTITY_PROVIDER: "projects/812403941017/locations/global/workloadIdentityPools/terraform-github-actions/providers/terraform-github-actions"  # Workload Identity プロバイダー
     #-----------------------------
     # ジョブの中で実行される一連のタスク
     #-----------------------------
@@ -89,8 +91,8 @@ jobs:
         with:
           create_credentials_file: "true"
           activate_credentials_file: "true"
-          workload_identity_provider: ${{ matrix.WORKLOAD_IDENTITY_PROVIDER }}  # Workload Identity プロバイダー
-          service_account: ${{ matrix.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
       #-----------------------------
       # terraform のインストール
       #-----------------------------

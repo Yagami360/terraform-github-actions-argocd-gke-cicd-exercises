@@ -1,3 +1,9 @@
+# ローカル変数
+locals {
+  repository_owner = "Yagami360"
+  repository_name = "terraform-github-actions-argocd-gke-cicd-exercises"
+}
+
 # GitHub Actions 用のサービスアカウント
 resource "google_service_account" "github_actions_service_account" {
   project      = "my-project2-303004"

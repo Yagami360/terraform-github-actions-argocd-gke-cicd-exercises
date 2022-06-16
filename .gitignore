@@ -6,6 +6,7 @@
 *.tfvars
 .terraform.lock.hcl
 *.info
+.key
 _old
 
 make_service_account.sh
