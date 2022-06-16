@@ -1,0 +1,13 @@
+*.code-workspace
+*.env
+.terraform
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+*.info
+_old
+
+make_service_account.sh
+deploy_gke_terraform.sh
+delete_gke_terraform.sh
