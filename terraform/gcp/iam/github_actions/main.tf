@@ -7,7 +7,7 @@ locals {
 # GitHub Actions 用のサービスアカウント
 resource "google_service_account" "github_actions_service_account" {
   project      = "my-project2-303004"
-  account_id   = "terraform-github-actions"
+  account_id   = "github-actions-service-account"
   display_name = "GitHub Actions of Terraform"
 }
 
@@ -20,7 +20,7 @@ resource "google_project_iam_member" "github_actions_iam" {
 # Workload Identity プール（外部IDとGoogle Cloudとの紐付けを設定した Workload Identity プロバイダをグループ化し、管理するためのもの）
 resource "google_iam_workload_identity_pool" "github_actions_workload_identity_pool" {
   provider                  = google-beta
-  workload_identity_pool_id = "terraform-github-actions"
+  workload_identity_pool_id = "github-actions-pool"
   display_name              = "Terraform GitHub Actions"
   description               = "Used by GitHub Actions"
 }
@@ -29,7 +29,7 @@ resource "google_iam_workload_identity_pool" "github_actions_workload_identity_p
 resource "google_iam_workload_identity_pool_provider" "github_actions_workload_identity_provider" {
   provider                           = google-beta
   workload_identity_pool_id          = google_iam_workload_identity_pool.github_actions_workload_identity_pool.workload_identity_pool_id
-  workload_identity_pool_provider_id = "terraform-github-actions"
+  workload_identity_pool_provider_id = "github-actions-provider"
   attribute_mapping                  = {
     "google.subject"       = "assertion.sub"
     "attribute.actor"      = "assertion.actor"
@@ -43,7 +43,7 @@ resource "google_iam_workload_identity_pool_provider" "github_actions_workload_i
   }
 }
 
-# GitHub Actions 用サービスアカウントに IAM Role "roles/iam.workloadIdentityUser" を付与
+# WorklWorkload Identity と GitHub Actions 用サービスアカウントの連携
 resource "google_service_account_iam_member" "bind_sa_to_repo" {
   service_account_id = google_service_account.github_actions_service_account.name
   role               = "roles/iam.workloadIdentityUser"

@@ -15,5 +15,3 @@ services:
       LC_ALL: C.UTF-8
       LANG: C.UTF-8
       GOOGLE_APPLICATION_CREDENTIALS: /.config/gcloud/application_default_credentials.json  # terraform で各種 GCP サービスを認識できるようにする
-      #GOOGLE_CLIENT_ID: "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
-      #GOOGLE_CLIENT_SECRET: "d-FL95Q19q7MQmFpd7hHD0Ty"

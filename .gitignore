@@ -7,7 +7,7 @@
 .terraform.lock.hcl
 *.info
 .key
-_old
+.old
 
 make_service_account.sh
 deploy_gke_terraform.sh
