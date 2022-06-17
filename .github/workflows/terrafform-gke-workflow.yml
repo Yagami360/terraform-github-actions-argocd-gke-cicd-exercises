@@ -117,13 +117,13 @@ jobs:
 #        run: cd api && gcloud builds submit --config cloudbuild.yml --timeout 3600
       - name: 'docker pull from gcr for api'
 #        if: steps.diff_api.outputs.diff == 'true'
-        run: "bash -c 'docker pull gcr.io/${PROJECT_ID}/{API_IMAGE_NAME}:latest || exit 0'"
+        run: "bash -c 'docker pull gcr.io/${PROJECT_ID}/${API_IMAGE_NAME}:latest || exit 0'"
       - name: 'docker build for api'
 #        if: steps.diff_api.outputs.diff == 'true'
-        run: 'docker build -t gcr.io/${PROJECT_ID}/{API_IMAGE_NAME}:latest --cache-from gcr.io/${PROJECT_ID}/{API_IMAGE_NAME}:latest -f api/Dockerfile .'
+        run: 'docker build -t gcr.io/${PROJECT_ID}/${API_IMAGE_NAME}:latest --cache-from gcr.io/${PROJECT_ID}/${API_IMAGE_NAME}:latest -f api/Dockerfile .'
       - name: 'docker push to gcr for proxy and try-on model'
 #        if: steps.diff_api.outputs.diff == 'true'
-        run: 'docker push gcr.io/${PROJECT_ID}/{API_IMAGE_NAME}:latest'
+        run: 'docker push gcr.io/${PROJECT_ID}/${API_IMAGE_NAME}:latest'
       #-----------------------------
       # GKE クラスターとノードプール作成
       #-----------------------------
