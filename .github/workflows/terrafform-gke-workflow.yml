@@ -11,8 +11,9 @@ on:
     # 変更がトリガーとなるファイル
     paths:
       - '.github/workflows/*'  
-      - 'api/*.py'
-#      - 'terraform/gcp/iam/*.tf'
+      - 'api/app.py'
+      - 'api/Dockerfile'
+#      - 'terraform/gcp/iam/**'
 #      - 'terraform/gcp/gcr/*.tf'
       - 'terraform/gcp/gke/*.tf'
   # main ブランチに PR された時にトリガー
@@ -21,8 +22,9 @@ on:
       - main
     paths:
       - '.github/workflows/*'
-      - 'api/*.py'
-#      - 'terraform/gcp/iam/*.tf'      
+      - 'api/app.py'
+      - 'api/Dockerfile'
+#      - 'terraform/gcp/iam/**'      
 #      - 'terraform/gcp/gcr/*.tf'
       - 'terraform/gcp/gke/*.tf'
 #------------------------------------------------------
@@ -58,7 +60,6 @@ jobs:
       SERVICE_ACCOUNT: github_actions_service_account@my-project2-303004.iam.gserviceaccount.com                                                       # GitHub Actions 用のサービスアカウント
       WORKLOAD_IDENTITY_PROVIDER: "projects/85607256401/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"  # GitHub Actions 用のサービスアカウントと接続する Workload Identity プロバイダーの名前
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # GitHub レポジトリへのアクセストークンを設定し、GitHub レポジトリへのコメントが可能にする / secrets は、github レポジトリの project の setting > secrets から登録する
-      API_DIR: api
       TERRAFORM_DIR: ${{ matrix.dir }}              # tf ファイルの格納ディレクトリ
       API_IMAGE_NAME: fast-api-image-gke:latest
     #-----------------------------
@@ -68,7 +69,7 @@ jobs:
       #-----------------------------
       # ブランチを切る
       #-----------------------------
-      - uses: actions/checkout@v2       # use タグで Actions（一連の定義済み処理）を指定 / actions/checkout@v2 : actions/v2 という GitHub リポジトリにあるアクションの v2 ブランチのコードを使用し、指定したリポジトリからソースコードを git checkout する
+      - uses: actions/checkout@v3       # use タグで Actions（一連の定義済み処理）を指定 / actions/checkout@v2 : actions/v2 という GitHub リポジトリにあるアクションの v2 ブランチのコードを使用し、指定したリポジトリからソースコードを git checkout する
       #-----------------------------
       #  diff があるか確認
       #-----------------------------
@@ -77,19 +78,20 @@ jobs:
         uses: technote-space/get-diff-action@v4.0.2
         with:
           PATTERNS: |
-            ${{ env.API_DIR }}/*.py
-      - name: Check diff for *.tf
+            app/app.py
+            app/Dockerfile
+      - name: Check diff for gke *.tf
         id: diff_tf
         uses: technote-space/get-diff-action@v4.0.2
         with:
           PATTERNS: |
-            ${{ env.TERRAFORM_DIR }}/*.tf
+            ${{ env.TERRAFORM_DIR }}/gke/*.tf
       #-----------------------------
       # GCP の認証処理
       #-----------------------------
       # Workload Identity を使用した認証
       - name: "authenticate to gcp"
-        if: steps.diff_tf.outputs.diff == 'true' || steps.diff_api.outputs.diff == 'true'
+#        if: steps.diff_tf.outputs.diff == 'true' || steps.diff_api.outputs.diff == 'true'
         uses: "google-github-actions/auth@v0.3.1"
         with:
           create_credentials_file: "true"
@@ -100,7 +102,7 @@ jobs:
       # gclould のインストール
       #-----------------------------
       - name: "install gcloud"
-        if: steps.diff_api.outputs.diff == 'true'
+#        if: steps.diff_api.outputs.diff == 'true'
         uses: google-github-actions/setup-gcloud@v0.2.0
         with:
           project_id: ${{ env.PROJECT_ID }}
@@ -111,20 +113,20 @@ jobs:
       # docker image 作成 & GCR に push
       #-----------------------------
       - name: "bulid docker images and push to gcr for api"
-        if: steps.diff_api.outputs.diff == 'true'
+#        if: steps.diff_api.outputs.diff == 'true'
         run: cd api && gcloud builds submit --config cloudbuild.yml --timeout 3600
       #-----------------------------
       # GKE クラスターとノードプール作成
       #-----------------------------
       # terraform のインストール
       - name: install terraform
-        if: steps.diff_tf.outputs.diff == 'true'
+#        if: steps.diff_tf.outputs.diff == 'true'
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.9
       # terraform init
       - name: terraform init
-        if: steps.diff_tf.outputs.diff == 'true'
+#        if: steps.diff_tf.outputs.diff == 'true'
         run: terraform -chdir="${TERRAFORM_DIR}" init
       # terraform plan
       - name: terraform plan
@@ -133,8 +135,8 @@ jobs:
         run: terraform -chdir="${TERRAFORM_DIR}" plan -out workspace.plan
       # PR に terraform plan の内容を投稿
       - name: post PR terraform plan
-        if: always() && steps.diff_tf.outputs.diff == 'true' && github.event_name == 'pull_request'
-#        if: always() && github.event_name == 'pull_request'
+#        if: always() && steps.diff_tf.outputs.diff == 'true' && github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: robburger/terraform-pr-commenter@v1
         with:
           commenter_type: plan
@@ -142,6 +144,6 @@ jobs:
           commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
       # terraform apply
       - name: terraform apply
-        if: steps.diff_tf.outputs.diff == 'true' && github.event_name == 'push'
-#        if: github.event_name == 'push'
+#        if: steps.diff_tf.outputs.diff == 'true' && github.event_name == 'push'
+        if: github.event_name == 'push'
         run: terraform -chdir="${TERRAFORM_DIR}" apply workspace.plan
