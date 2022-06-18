@@ -154,7 +154,7 @@ jobs:
         run: terraform -chdir="terraform/gcp/gke" init
       # terraform plan
       - name: terraform plan
-        if: steps.diff_tf.outputs.diff == 'true'
+#        if: steps.diff_tf.outputs.diff == 'true'
         id: plan
         run: terraform -chdir="terraform/gcp/gke" plan -out workspace.plan
       # PR に terraform plan の内容を投稿
