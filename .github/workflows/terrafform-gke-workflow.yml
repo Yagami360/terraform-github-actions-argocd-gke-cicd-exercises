@@ -59,7 +59,7 @@ jobs:
       PROJECT_ID: my-project2-303004
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # GitHub レポジトリへのアクセストークンを設定し、GitHub レポジトリへのコメントが可能にする / secrets は、github レポジトリの project の setting > secrets から登録する
       TERRAFORM_DIR: ${{ matrix.dir }}              # tf ファイルの格納ディレクトリ
-      API_IMAGE_NAME: fast-api-image-gke:latest
+      API_IMAGE_NAME: fast-api-image-gke
     #-----------------------------
     # ジョブの中で実行される一連のタスク
     #-----------------------------
