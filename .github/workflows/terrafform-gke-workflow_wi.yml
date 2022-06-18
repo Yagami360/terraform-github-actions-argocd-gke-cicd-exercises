@@ -109,6 +109,8 @@ jobs:
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.SERVICE_ACCOUNT }}
           create_credentials_file: 'true'
+      - name: gcloud auth
+        run: gcloud auth configure-docker
       #-----------------------------
       # docker image 作成 & GCR に push
       #-----------------------------
