@@ -1,3 +1,32 @@
+#-------------------------------
+# プロバイダー設定
+#-------------------------------
+provider "google" {
+  project = "my-project2-303004"
+  region  = "us-central1"
+}
+
+#-------------------------------
+# 実行する Terraform 環境情報
+#-------------------------------
+terraform {
+  # バックエンドを GCS にする
+  backend "gcs" {
+    bucket = "terraform-tf-states-bucket"
+    prefix = "gcp/iam/state"
+  }
+
+  # プロバイダー情報
+  required_providers {
+    google = {
+      version = "~> 4.13.0"   # Spot VM は、4.13.0 以上で使用可能
+    }
+  }
+}
+
+#-------------------------------
+# サービスアカウント
+#-------------------------------
 # ローカル変数
 locals {
   repository_owner = "Yagami360"

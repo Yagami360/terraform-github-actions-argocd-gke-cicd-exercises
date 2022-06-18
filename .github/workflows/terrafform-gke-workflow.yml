@@ -14,7 +14,7 @@ on:
       - 'api/app.py'
       - 'api/Dockerfile'
 #      - 'terraform/gcp/iam/**'
-      - 'terraform/gcp/gcs/*.tf'
+#      - 'terraform/gcp/gcs/*.tf'
       - 'terraform/gcp/gke/*.tf'
   # main ブランチに PR された時にトリガー
   pull_request:
@@ -25,7 +25,7 @@ on:
       - 'api/app.py'
       - 'api/Dockerfile'
 #      - 'terraform/gcp/iam/**'      
-      - 'terraform/gcp/gcs/*.tf'
+#      - 'terraform/gcp/gcs/*.tf'
       - 'terraform/gcp/gke/*.tf'
 #------------------------------------------------------
 # GitHub レポジトリへの権限設定
@@ -72,7 +72,6 @@ jobs:
         uses: technote-space/get-diff-action@v4.0.2
         with:
           PATTERNS: |
-            terraform/gcp/gcs/*.tf
             terraform/gcp/gke/*.tf
       #-----------------------------
       # GCP の認証処理
@@ -120,48 +119,17 @@ jobs:
         with:
           terraform_version: 1.0.9
       #-----------------------------
-      # *.tfstate ファイル保管用 GCS パケット作成
-      #-----------------------------
-      # terraform init
-      - name: terraform init for gcs
-#        if: steps.diff_tf.outputs.diff == 'true'
-#        run: terraform -chdir="terraform/gcp/gcs" init
-        run: cd terraform/gcp/gcs && terraform init
-      # terraform plan
-      - name: terraform plan for gcs
-#        if: steps.diff_tf.outputs.diff == 'true'
-        id: plan
-#        run: terraform -chdir="terraform/gcp/gcs" plan -out workspace.plan
-        run: cd terraform/gcp/gcs && terraform plan -out workspace.plan
-      # PR に terraform plan の内容を投稿
-      - name: post PR terraform plan for gcs
-#        if: always() && steps.diff_tf.outputs.diff == 'true' && github.event_name == 'pull_request'
-        if: always() && github.event_name == 'pull_request'
-        uses: robburger/terraform-pr-commenter@v1
-        with:
-          commenter_type: plan
-          commenter_input: ${{ format('{0}{1}', steps.plan.outputs.stdout, steps.plan.outputs.stderr) }}
-          commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
-      # terraform apply
-      - name: terraform apply for gcs
-#        if: steps.diff_tf.outputs.diff == 'true' && github.event_name == 'push'
-        if: github.event_name == 'push'
-#        run: terraform -chdir="terraform/gcp/gcs" apply workspace.plan
-        run: cd terraform/gcp/gcs && terraform apply workspace.plan
-      #-----------------------------
       # GKE クラスターとノードプール作成
       #-----------------------------
       # terraform init
       - name: terraform init for gke
 #        if: steps.diff_tf.outputs.diff == 'true'
-#        run: terraform -chdir="terraform/gcp/gke" init
-        run: cd terraform/gcp/gke && terraform init
+        run: terraform -chdir="terraform/gcp/gke" init
       # terraform plan
       - name: terraform plan for gke
 #        if: steps.diff_tf.outputs.diff == 'true'
         id: plan
-#        run: terraform -chdir="terraform/gcp/gke" plan -out workspace.plan
-        run: cd terraform/gcp/gke && terraform plan -out workspace.plan
+        run: terraform -chdir="terraform/gcp/gke" plan -out workspace.plan
       # PR に terraform plan の内容を投稿
       - name: post PR terraform plan for gke
 #        if: always() && steps.diff_tf.outputs.diff == 'true' && github.event_name == 'pull_request'
@@ -175,8 +143,7 @@ jobs:
       - name: terraform apply for gke
 #        if: steps.diff_tf.outputs.diff == 'true' && github.event_name == 'push'
         if: github.event_name == 'push'
-#        run: terraform -chdir="terraform/gcp/gke" apply workspace.plan
-        run: cd terraform/gcp/gke && terraform apply workspace.plan
+        run: terraform -chdir="terraform/gcp/gke" apply workspace.plan
       #-----------------------------
       # 各種 k8s リソースを GKE にデプロイ
       #-----------------------------

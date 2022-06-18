@@ -7,6 +7,24 @@ provider "google" {
 }
 
 #-------------------------------
+# 実行する Terraform 環境情報
+#-------------------------------
+terraform {
+  # バックエンドを GCS にする
+  backend "gcs" {
+    bucket = "terraform-tf-states-bucket"
+    prefix = "gcp/gke/state"
+  }
+
+  # プロバイダー情報
+  required_providers {
+    google = {
+      version = "~> 4.13.0"   # Spot VM は、4.13.0 以上で使用可能
+    }
+  }
+}
+
+#-------------------------------
 # 各種 GCP サービス有効化
 #-------------------------------
 resource "google_project_service" "enable_iamcredentials" {
@@ -19,24 +37,6 @@ resource "google_project_service" "enable_secretmanager" {
 
 resource "google_project_service" "enable_cloudresourcemanager" {
   service = "cloudresourcemanager.googleapis.com"
-}
-
-#-------------------------------
-# 実行する Terraform 環境情報
-#-------------------------------
-terraform {
-  # バックエンドを GCS にする
-  backend "gcs" {
-    bucket = "terraform-tf-states-bucket"
-    prefix = "terraform/state"
-  }
-
-  # プロバイダー情報
-  required_providers {
-    google = {
-      version = "~> 4.13.0"   # Spot VM は、4.13.0 以上で使用可能
-    }
-  }
 }
 
 #-------------------------------

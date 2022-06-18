@@ -44,17 +44,16 @@ output bucket_name {
 # 実行する Terraform 環境情報
 #-------------------------------
 terraform {
-  # バックエンドを GCS にする
-  backend "gcs" {
-    bucket = "terraform-tf-states-bucket"
-    prefix = "terraform/state"
-  }
+  # バックエンドを GCS にする（初回の GCS パケット未作成時はエラーになるのでコメントアウト）
+#  backend "gcs" {
+#    bucket = "terraform-tf-states-bucket"
+#    prefix = "gcp/gcs/state"
+#  }
 
   # プロバイダー情報
-  required_providers {
-    google = {
-      version = "~> 4.13.0"   # Spot VM は、4.13.0 以上で使用可能
-    }
-  }
+#  required_providers {
+#    google = {
+#      version = "~> 4.13.0"   # Spot VM は、4.13.0 以上で使用可能
+#    }
+#  }
 }
-
