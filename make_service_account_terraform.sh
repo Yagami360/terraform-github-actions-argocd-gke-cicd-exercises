@@ -7,6 +7,8 @@ CONTAINER_NAME="terraform-gcp-container"
 #-----------------------------
 # terraform
 #-----------------------------
+cd terraform
+
 # terraform コンテナ起動
 docker-compose -f docker-compose.yml stop
 docker-compose -f docker-compose.yml up -d

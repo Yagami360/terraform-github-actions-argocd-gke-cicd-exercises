@@ -57,6 +57,8 @@ jobs:
     #-----------------------------
     env:
       PROJECT_ID: my-project2-303004
+      SERVICE_ACCOUNT: github_actions_service_account@my-project2-303004.iam.gserviceaccount.com                                                       # GitHub Actions 用のサービスアカウント
+      WORKLOAD_IDENTITY_PROVIDER: "projects/85607256401/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"  # GitHub Actions 用のサービスアカウントと接続する Workload Identity プロバイダーの名前
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # GitHub レポジトリへのアクセストークンを設定し、GitHub レポジトリへのコメントが可能にする / secrets は、github レポジトリの project の setting > secrets から登録する
       TERRAFORM_DIR: ${{ matrix.dir }}              # tf ファイルの格納ディレクトリ
       API_IMAGE_NAME: fast-api-image-gke:latest
@@ -87,24 +89,26 @@ jobs:
       #-----------------------------
       # GCP の認証処理
       #-----------------------------
-#      - name: "authenticate to gcp"
+      # Workload Identity を使用した認証
+      - name: "authenticate to gcp"
 #        if: steps.diff_tf.outputs.diff == 'true' || steps.diff_api.outputs.diff == 'true'
-#        uses: "google-github-actions/auth@v0.4.0"
-#        with:
-#          create_credentials_file: "true"
-#          activate_credentials_file: "true"
+        uses: "google-github-actions/auth@v0.4.0"
+        with:
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          create_credentials_file: "true"
+          activate_credentials_file: "true"
       #-----------------------------
       # gclould のインストール
       #-----------------------------
       - name: "install gcloud"
-#        if: steps.diff_api.outputs.diff == 'true'
+        if: steps.diff_api.outputs.diff == 'true'
         uses: google-github-actions/setup-gcloud@v0.2.0
         with:
           project_id: ${{ env.PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-      - name: Authorize push
-        run: gcloud auth configure-docker
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          create_credentials_file: 'true'
       #-----------------------------
       # docker image 作成 & GCR に push
       #-----------------------------

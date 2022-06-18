@@ -9,6 +9,5 @@
 .key
 .old
 
-make_service_account.sh
 deploy_gke_terraform.sh
 delete_gke_terraform.sh
