@@ -7,6 +7,21 @@ GitHub Actions, Terraform, ArgoCD を使用してた GKE 上の Web-API の CI/C
 
 Workload Identity を使用しない場合の GitHub Actions のワークフローは、`.github/workflows/terrafform-gke-workflow.yml` に定義している
 
+1. 【初回のみ】`*.tfstate` ファイルを保管するための GCS パケットを作成する<br>
+    `terraform apply` を実行すると、tf ファイルに基づいて、各種インフラが作成されるが、そのインフラ情報が、`*.tfstate` ファイルに自動的に保存され（場所は、tf ファイルと同じディレクトリ内）、次回の `terraform apply` 実行時等で前回のインフラ状態との差分をみる際に利用されるが、tfstate ファイルをローカルに保存すると、複数人で terraform を実行できなくなってしまう。この問題を解決するためには、tfstate ファイルを GCS 上に保管するようにする
+
+    > 尚、`*.tfstate` ファイルを保管するための GCS パケットを terraform を使用して作成する場合も、GCS パケット上に tfstate ファイルを保存しようとしても、そもそも最初の段階では GCS パケットが存在しなくて保存できないので、`*.tfstate` ファイルをローカルに保存するようにする
+    
+    - gcloud コマンドを使用して作成する場合
+        ```sh
+        sh make_gcs_bucket.sh
+        ```
+
+    - terraform を使用して作成する場合
+        ```sh
+        sh make_gcs_bucket_terraform.sh
+        ```
+
 1. 【初回のみ】GitHub Actions 用サービスアカウントの作成する<br>
 
     - gcloud コマンドを使用して作成する場合
@@ -23,18 +38,6 @@ Workload Identity を使用しない場合の GitHub Actions のワークフロ�
     本 GitHub レポジトリの「Settings」-> 「Secrets」-> 「[Actions](https://github.com/Yagami360/terraform-github-actions-argocd-gke-cicd-exercises/settings/secrets/actions)」から、`GCP_SA_KEY` を追加する
 
     > `GCP_SA_KEY` の値は、`cat .key/${SERVICE_ACCOUNT_NAME}.json | base64` で取得できる
-
-1. 【初回のみ】`*.tfstate` ファイルを保管するための GCS パケットを作成する<br>
-
-    - gcloud コマンドを使用して作成する場合
-        ```sh
-        sh make_gcs_bucket.sh
-        ```
-
-    - terraform を使用して作成する場合
-        ```sh
-        sh make_gcs_bucket_terraform.sh
-        ```
 
 1. ブランチを切る<br>
     `main` ブランチから別ブランチを作成する
@@ -57,6 +60,21 @@ Workload Identity を使用しない場合の GitHub Actions のワークフロ�
 ### ◎ Workload Identity を使用する場合
 
 Workload Identity を使用する場合の GitHub Actions のワークフローは、`.github/workflows/terrafform-gke-workflow_wl.yml` に定義している
+
+1. 【初回のみ】`*.tfstate` ファイルを保管するための GCS パケットを作成する<br>
+    `terraform apply` を実行すると、tf ファイルに基づいて、各種インフラが作成されるが、そのインフラ情報が、`*.tfstate` ファイルに自動的に保存され（場所は、tf ファイルと同じディレクトリ内）、次回の `terraform apply` 実行時等で前回のインフラ状態との差分をみる際に利用されるが、tfstate ファイルをローカルに保存すると、複数人で terraform を実行できなくなってしまう。この問題を解決するためには、tfstate ファイルを GCS 上に保管するようにする
+
+    > 尚、`*.tfstate` ファイルを保管するための GCS パケットを terraform を使用して作成する場合も、GCS パケット上に tfstate ファイルを保存しようとしても、そもそも最初の段階では GCS パケットが存在しなくて保存できないので、`*.tfstate` ファイルをローカルに保存するようにする
+
+    - gcloud コマンドを使用して作成する場合
+        ```sh
+        sh make_gcs_bucket.sh
+        ```
+
+    - terraform を使用して作成する場合
+        ```sh
+        sh make_gcs_bucket_terraform.sh
+        ```
 
 1. 【初回のみ】GitHub Actions 用サービスアカウントの作成し、Workload Identity と連携する<br>
 
@@ -83,18 +101,6 @@ Workload Identity を使用する場合の GitHub Actions のワークフロー�
     >     --workload-identity-pool=${WORKLOAD_IDENTITY_POOL_NAME} \
     >     --format='value(name)'
     > ```
-
-1. 【初回のみ】`*.tfstate` ファイルを保管するための GCS パケットを作成する<br>
-
-    - gcloud コマンドを使用して作成する場合
-        ```sh
-        sh make_gcs_bucket.sh
-        ```
-
-    - terraform を使用して作成する場合
-        ```sh
-        sh make_gcs_bucket_terraform.sh
-        ```
 
 1. ブランチを切る<br>
     `main` ブランチから別ブランチを作成する

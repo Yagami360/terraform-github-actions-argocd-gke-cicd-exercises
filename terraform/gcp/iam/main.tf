@@ -13,7 +13,7 @@ terraform {
   # バックエンドを GCS にする
   backend "gcs" {
     bucket = "terraform-tf-states-bucket"
-    prefix = "gcp/iam/state"
+    prefix = "gcp/iam"
   }
 
   # プロバイダー情報

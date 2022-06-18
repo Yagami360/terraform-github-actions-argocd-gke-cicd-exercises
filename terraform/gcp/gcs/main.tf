@@ -47,7 +47,7 @@ terraform {
   # バックエンドを GCS にする（初回の GCS パケット未作成時はエラーになるのでコメントアウト）
 #  backend "gcs" {
 #    bucket = "terraform-tf-states-bucket"
-#    prefix = "gcp/gcs/state"
+#    prefix = "gcp/gcs"
 #  }
 
   # プロバイダー情報
