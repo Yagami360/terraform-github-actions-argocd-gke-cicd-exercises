@@ -13,7 +13,7 @@ on:
       - '.github/workflows/*'  
       - 'api/app.py'
       - 'api/Dockerfile'
-#      - 'terraform/gcp/iam/**'
+#      - 'terraform/gcp/iam/*.tf'
 #      - 'terraform/gcp/gcr/*.tf'
       - 'terraform/gcp/gke/*.tf'
   # main ブランチに PR された時にトリガー
@@ -24,7 +24,7 @@ on:
       - '.github/workflows/*'
       - 'api/app.py'
       - 'api/Dockerfile'
-#      - 'terraform/gcp/iam/**'      
+#      - 'terraform/gcp/iam/*.tf'
 #      - 'terraform/gcp/gcr/*.tf'
       - 'terraform/gcp/gke/*.tf'
 #------------------------------------------------------
@@ -57,8 +57,8 @@ jobs:
     #-----------------------------
     env:
       PROJECT_ID: my-project2-303004
-      SERVICE_ACCOUNT: github_actions_service_account@my-project2-303004.iam.gserviceaccount.com                                                       # GitHub Actions 用のサービスアカウント
-      WORKLOAD_IDENTITY_PROVIDER: "projects/85607256401/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"  # GitHub Actions 用のサービスアカウントと接続する Workload Identity プロバイダーの名前
+      SERVICE_ACCOUNT: github_actions_sa@my-project2-303004.iam.gserviceaccount.com                                                       # GitHub Actions 用のサービスアカウント
+      WORKLOAD_IDENTITY_PROVIDER: "projects/85607256401/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider-2"  # GitHub Actions 用のサービスアカウントと接続する Workload Identity プロバイダーの名前
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # GitHub レポジトリへのアクセストークンを設定し、GitHub レポジトリへのコメントが可能にする / secrets は、github レポジトリの project の setting > secrets から登録する
       TERRAFORM_DIR: ${{ matrix.dir }}              # tf ファイルの格納ディレクトリ
       API_IMAGE_NAME: fast-api-image-gke

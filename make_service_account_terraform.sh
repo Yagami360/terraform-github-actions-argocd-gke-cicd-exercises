@@ -20,13 +20,13 @@ docker exec -it ${CONTAINER_NAME} /bin/sh -c "gcloud auth application-default lo
 docker exec -it ${CONTAINER_NAME} /bin/sh -c "gcloud config set project ${PROJECT_ID}"
 
 # terraform を初期化する。
-docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam/github_actions && terraform init"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform init"
 
 # 作成したテンプレートファイルの定義内容を確認する
-docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam/github_actions && terraform plan"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform plan"
 
 # 定義を適用してインスタンスを作成する
-docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam/github_actions && terraform apply"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform apply"
 
 # terraform が作成したオブジェクトの内容を確認
-docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam/github_actions && terraform show"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform show"
