@@ -4,13 +4,17 @@
 provider "google" {
   project = "my-project2-303004"
   region  = "us-central1"
+  zone = "us-central1-b"
 }
 
 #-------------------------------
 # 実行する Terraform 環境情報
 #-------------------------------
 terraform {
-  # バックエンドを GCS にする
+  # terraform のバージョン
+#  required_version = "~> 1.2.0"
+
+  # バックエンドを GCS にする  
   backend "gcs" {
     bucket = "terraform-tf-states-bucket"
     prefix = "gcp/gke"
@@ -44,9 +48,12 @@ resource "google_project_service" "enable_cloudresourcemanager" {
 #-------------------------------
 resource "google_container_cluster" "fast_api_cluster" {
   name     = "fast-api-cluster"
-  location = "us-central1"
+  location = "us-central1-b"
+#  node_locations = [   # マルチゾーンクラスタの場合
+#    "us-central1-a", "us-central1-b", "us-central1-f"
+#  ]
 
-  remove_default_node_pool = true
+  remove_default_node_pool = true   # デフォルトのノードプールを削除する
   initial_node_count       = 1
 
   network = "default"
@@ -54,24 +61,26 @@ resource "google_container_cluster" "fast_api_cluster" {
   #min_master_version = "1.21.10-gke.2000"
   #node_version       = "1.12.6-gke.7"
 
-  master_auth {
-    username = ""
-    password = ""
+#  master_auth {
+#    username = ""      # Kubernetes master (mster ノード?) にアクセスするときの basic 認証に使用するユーザ名
+#    password = ""      # Kubernetes master (mster ノード?) にアクセスするときの basic 認証に使用するパスワード
 
-    client_certificate_config {
-      issue_client_certificate = false
-    }
-  }
+#    client_certificate_config {
+#      issue_client_certificate = false
+#    }
+#  }
 }
 
 #-------------------------------
 # ノードプール
 #-------------------------------
-# CPU ノードプール
 resource "google_container_node_pool" "fast_api_cpu_pool" {
   name       = "fast-api-cpu-pool"
-  location   = "${google_container_cluster.kitemiru_api_terraffrom_cluster.location}"
-  cluster    = "${google_container_cluster.kitemiru_api_terraffrom_cluster.name}"
+  location   = "${google_container_cluster.fast_api_cluster.location}"
+#  node_locations = [   # マルチゾーンクラスタの場合
+#    "us-central1-a", "us-central1-b", "us-central1-f"
+#  ]
+  cluster    = "${google_container_cluster.fast_api_cluster.name}"
   
   node_count = "1"
   autoscaling {
@@ -80,14 +89,18 @@ resource "google_container_node_pool" "fast_api_cpu_pool" {
   }
 
   management {
-    auto_repair = true
+    auto_repair = true    # true の場合ノードが自動修復される
+    auto_upgrade = true   # true の場合ノードが自動更新される
   }
 
   node_config {
-    machine_type = "n1-standard-4"
-    #preemptible  = false    
-    #spot = true             # Spot VM
+    machine_type = "n1-standard-1"
+    #machine_type = "n1-standard-4"
+    
+    #preemptible  = false         # プリミティブ VM
+    #spot = true                  # Spot VM
 
+    # デフォルトサービスアカウントが利用できる Google API のスコープ
     oauth_scopes = [
       "https://www.googleapis.com/auth/devstorage.read_only",
       "https://www.googleapis.com/auth/logging.write",
@@ -97,8 +110,10 @@ resource "google_container_node_pool" "fast_api_cpu_pool" {
       "https://www.googleapis.com/auth/trace.append",
     ]
 
-    metadata {
-      disable-legacy-endpoints = "true"
-    }
+    # GPU ノードプールの場合
+#    guest_accelerator {
+#      type  = "nvidia-tesla-t4"
+#      count = 1
+#    }
   }
 }

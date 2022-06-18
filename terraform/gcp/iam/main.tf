@@ -17,11 +17,11 @@ terraform {
   }
 
   # プロバイダー情報
-  required_providers {
-    google = {
-      version = "~> 4.13.0"   # Spot VM は、4.13.0 以上で使用可能
-    }
-  }
+#  required_providers {
+#    google = {
+#      version = "~> 4.13.0"
+#    }
+#  }
 }
 
 #-------------------------------

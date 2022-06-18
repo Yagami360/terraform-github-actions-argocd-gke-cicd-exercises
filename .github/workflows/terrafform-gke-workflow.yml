@@ -13,9 +13,9 @@ on:
       - '.github/workflows/terrafform-gke-workflow.yml'  
       - 'api/app.py'
       - 'api/Dockerfile'
-#      - 'terraform/gcp/iam/**'
-#      - 'terraform/gcp/gcs/*.tf'
       - 'terraform/gcp/gke/*.tf'
+      - 'k8s/*.yml'
+      - 'k8s/*.yaml'
   # main ブランチに PR された時にトリガー
   pull_request:
     branches:
@@ -24,9 +24,9 @@ on:
       - '.github/workflows/terrafform-gke-workflow.yml'  
       - 'api/app.py'
       - 'api/Dockerfile'
-#      - 'terraform/gcp/iam/**'      
-#      - 'terraform/gcp/gcs/*.tf'
       - 'terraform/gcp/gke/*.tf'
+      - 'k8s/*.yml'
+      - 'k8s/*.yaml'
 #------------------------------------------------------
 # GitHub レポジトリへの権限設定
 #------------------------------------------------------
@@ -79,6 +79,13 @@ jobs:
         with:
           PATTERNS: |
             terraform/gcp/gke/*.tf
+      - name: Check diff for k8s files
+        id: diff_k8s
+        uses: technote-space/get-diff-action@v4.0.2
+        with:
+          PATTERNS: |
+            k8s/*.yml
+            k8s/*.yaml
       #-----------------------------
       # GCP の認証処理
       #-----------------------------
@@ -119,7 +126,7 @@ jobs:
 #        if: steps.diff_tf.outputs.diff == 'true'
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.0.9
+          terraform_version: 1.2.3
       #-----------------------------
       # GKE クラスターとノードプール作成
       #-----------------------------
@@ -150,8 +157,18 @@ jobs:
       # 各種 k8s リソースを GKE にデプロイ
       #-----------------------------
       # kubectl コマンドのインストール
-
-      # ArgoCD の k8s リソースのデプロイ
-
+      - name: install kubectl
+#        if: steps.diff_k8s.outputs.diff == 'true'
+        uses: azure/setup-kubectl@v1
+      # 作成したクラスタに切り替える
+#      - name: get-credentials for gke clusters
+#        if: steps.diff_k8s.outputs.diff == 'true'
+#        run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID}
       # API の k8s リソースのデプロイ
-
+      - name: deploy k8s resources for api
+#        if: steps.diff_k8s.outputs.diff == 'true'
+        run: kubectl apply -f k8s/fast_api.yml
+      # ArgoCD の k8s リソースのデプロイ
+      - name: deploy k8s resources for argocd
+#        if: steps.diff_k8s.outputs.diff == 'true'
+        run: kubectl create namespace argocd && kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml

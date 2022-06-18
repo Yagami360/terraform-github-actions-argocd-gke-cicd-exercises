@@ -7,6 +7,24 @@ provider "google" {
 }
 
 #-------------------------------
+# 実行する Terraform 環境情報
+#-------------------------------
+terraform {
+  # バックエンドを GCS にする（初回の GCS パケット未作成時はエラーになるのでコメントアウト）
+#  backend "gcs" {
+#    bucket = "terraform-tf-states-bucket"
+#    prefix = "gcp/gcs"
+#  }
+
+  # プロバイダー情報
+#  required_providers {
+#    google = {
+#      version = "~> 4.13.0"
+#    }
+#  }
+}
+
+#-------------------------------
 # 各種 GCP サービス有効化
 #-------------------------------
 resource "google_project_service" "enable_iamcredentials" {
@@ -38,22 +56,4 @@ resource "google_storage_bucket" "terraform-tf-states" {
 output bucket_name {
   value       = google_storage_bucket.terraform-tf-states.name
   description = "terraform *.tfstate files"
-}
-
-#-------------------------------
-# 実行する Terraform 環境情報
-#-------------------------------
-terraform {
-  # バックエンドを GCS にする（初回の GCS パケット未作成時はエラーになるのでコメントアウト）
-#  backend "gcs" {
-#    bucket = "terraform-tf-states-bucket"
-#    prefix = "gcp/gcs"
-#  }
-
-  # プロバイダー情報
-#  required_providers {
-#    google = {
-#      version = "~> 4.13.0"   # Spot VM は、4.13.0 以上で使用可能
-#    }
-#  }
 }

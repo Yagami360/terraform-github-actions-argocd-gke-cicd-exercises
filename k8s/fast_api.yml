@@ -27,10 +27,12 @@ spec:
             value: "True"
         command: ["/bin/sh","-c"]
         args: ["gunicorn app:app --bind 0.0.0.0:5000 -k uvicorn.workers.UvicornWorker --workers 1 --threads 1 --backlog 100 --timeout 1000000 --reload"]
-#        resources:
-#          requests:
-#            cpu: 1
-#            memory: "0.1Gi"
+        resources:
+          requests:
+            cpu: 1
+            memory: "0.1Gi"
+#      nodeSelector:
+#        cloud.google.com/gke-spot: "true"     # Spot インスタンスで Pod を構成
 ---
 # Service
 apiVersion: v1
