@@ -7,7 +7,7 @@ locals {
 # GitHub Actions 用のサービスアカウント
 resource "google_service_account" "github_actions_service_account" {
   project      = "my-project2-303004"
-  account_id   = "github-actions-service-account"
+  account_id   = "github-actions-sa"
   display_name = "GitHub Actions of Terraform"
 }
 

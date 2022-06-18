@@ -22,45 +22,6 @@ resource "google_project_service" "enable_cloudresourcemanager" {
 }
 
 #-------------------------------
-# GKE 用サービスアカウント（GitHub Actions 用サービスアカウントと同じにする）
-#-------------------------------
-#resource "google_project_iam_member" "sakai_as_viewer" {
-#  role    = "roles/viewer"
-#  member  = "user:y034112@gmail.com"
-#}
-
-#output service_account_email {
-#  value       = module.terraform_github_actions.service_account_email
-#  description = "Service Account email address."
-#}
-
-#output workload_identity_provider_name {
-#  value       = module.terraform_github_actions.workload_identity_provider_name
-#  description = "Workload identity provider name, used to authenticate service account."
-#}
-
-#-------------------------------
-# GCS パケット
-#-------------------------------
-#data "google_project" "project" {}
-
-# tfstate ファイルを保存する GCS パケット
-# terraform apply で作成したインフラ情報は、*.tfstate ファイルに保存され、次回の terraform apply 実行時等で前回のインフラ状態との差分をみる際に利用されるが、
-# tfstate ファイルをローカルに置いたままでは複数人で terraform を実行できなくなってしまうので、GCS に保存する
-resource "google_storage_bucket" "terraform-tf-states" {
-  name          = "terraform-tf-states-bucket"
-  location      = "ASIA"
-  versioning {
-    enabled = true
-  }
-}
-
-output bucket_name {
-  value       = google_storage_bucket.terraform-tf-states.name
-  description = "terraform tfstate files"
-}
-
-#-------------------------------
 # 実行する Terraform 環境情報
 #-------------------------------
 terraform {
