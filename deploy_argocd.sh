@@ -50,13 +50,6 @@ echo "ArgoCD passward : ${ARGOCD_PASSWARD}"
 argocd login ${ARGOCD_SERVER_DOMAIN} --username admin --password ${ARGOCD_PASSWARD}
 
 #-----------------------------
-# ArgoCD API Server にアクセスする
-#-----------------------------
-if [ ${OS} = "Mac" ] ; then
-    open "https://${ARGOCD_SERVER_DOMAIN}" &
-fi
-
-#-----------------------------
 # ArgoCD で管理したい k8s マニフェストファイルと Git リポジトリーの同期を行う
 #-----------------------------
 # ArgoCD で管理するクラスターを選択し設定する
@@ -69,3 +62,10 @@ kubectl apply -f k8s/argocd-app.yml
 
 # ArgoCD と GitHub レポジトリの同期を行う
 argocd app sync ${ARGOCD_APP_NAME}
+
+#-----------------------------
+# ArgoCD API Server にアクセスする
+#-----------------------------
+if [ ${OS} = "Mac" ] ; then
+    open "https://${ARGOCD_SERVER_DOMAIN}" &
+fi
