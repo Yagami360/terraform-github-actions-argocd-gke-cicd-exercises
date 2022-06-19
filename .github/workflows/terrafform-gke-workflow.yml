@@ -51,6 +51,7 @@ jobs:
       API_IMAGE_NAME: fast-api-image-gke
       CLUSTER_NAME: fast-api-terraform-cluster
       REGION: us-central1
+      ZONE: us-central1-b
     #-----------------------------
     # ジョブの中で実行される一連のタスク
     #-----------------------------
@@ -173,7 +174,7 @@ jobs:
       # 作成したクラスタに切り替える
       - name: get-credentials for gke clusters
 #        if: steps.diff_k8s.outputs.diff == 'true'
-        run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID} --region ${REGION}
+        run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID} --region ${ZONE}
       # API の k8s リソースのデプロイ
       - name: deploy k8s resources for api
 #        if: steps.diff_k8s.outputs.diff == 'true'
