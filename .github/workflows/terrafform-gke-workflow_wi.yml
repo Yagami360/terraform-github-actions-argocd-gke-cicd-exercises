@@ -42,11 +42,14 @@ jobs:
     # 環境変数の設定
     #-----------------------------
     env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # GitHub レポジトリへのアクセストークンを設定し、GitHub レポジトリへのコメントが可能にする / secrets は、github レポジトリの project の setting > secrets から登録する
       PROJECT_ID: my-project2-303004
       SERVICE_ACCOUNT: github_actions_sa-2@my-project2-303004.iam.gserviceaccount.com                                                       # GitHub Actions 用のサービスアカウント
       WORKLOAD_IDENTITY_PROVIDER: "projects/85607256401/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider-2"  # GitHub Actions 用のサービスアカウントと接続する Workload Identity プロバイダーの名前
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # GitHub レポジトリへのアクセストークンを設定し、GitHub レポジトリへのコメントが可能にする / secrets は、github レポジトリの project の setting > secrets から登録する
       API_IMAGE_NAME: fast-api-image-gke
+      CLUSTER_NAME: fast-api-terraform-cluster
+      REGION: us-central1
+      ZONE: us-central1-b
     #-----------------------------
     # ジョブの中で実行される一連のタスク
     #-----------------------------
@@ -157,17 +160,17 @@ jobs:
       #-----------------------------
       # kubectl コマンドのインストール
       - name: install kubectl
-#        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff == 'true'
         uses: azure/setup-kubectl@v1
       # 作成したクラスタに切り替える
-#      - name: get-credentials for gke clusters
-#        if: steps.diff_k8s.outputs.diff == 'true'
-#        run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID}
+      - name: get-credentials for gke clusters
+        if: steps.diff_k8s.outputs.diff == 'true'
+        run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID} --region ${ZONE}
       # API の k8s リソースのデプロイ
       - name: deploy k8s resources for api
-#        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff == 'true'
         run: kubectl apply -f k8s/fast_api.yml
       # ArgoCD の k8s リソースのデプロイ
       - name: deploy k8s resources for argocd
-#        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff == 'true'
         run: kubectl create namespace argocd && kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
