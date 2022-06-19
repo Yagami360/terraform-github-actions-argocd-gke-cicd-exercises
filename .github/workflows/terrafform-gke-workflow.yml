@@ -165,10 +165,10 @@ jobs:
       - name: get-credentials for gke clusters
         if: steps.diff_k8s.outputs.diff
         run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID} --region ${ZONE}
-      # API の k8s リソースのデプロイ
-      - name: deploy k8s resources for api
-        if: steps.diff_k8s.outputs.diff
-        run: kubectl apply -f k8s/fast_api.yml
+      # API の k8s リソースのデプロイ（k8s リソースの CD は ArgoCD で行うのでコメントアウト）
+#      - name: deploy k8s resources for api
+#        if: steps.diff_k8s.outputs.diff
+#        run: kubectl apply -f k8s/fast_api.yml
       # ArgoCD の k8s リソースのデプロイ
       - name: deploy k8s resources for argocd
         if: steps.diff_k8s.outputs.diff

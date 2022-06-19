@@ -35,18 +35,6 @@ Workload Identity を使用しない場合の GitHub Actions のワークフロ�
 
     > `GCP_SA_KEY` の値は、`cat .key/${SERVICE_ACCOUNT_NAME}.json | base64` で取得できる
 
-1. 【初回のみ】ArgoCD CLI をインストールする<br>
-    - MacOS の場合<br>    
-        ```sh
-        brew install argocd
-        ```
-
-    - Linux の場合<br>
-        ```sh
-        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-        chmod +x /usr/local/bin/argocd
-        ```
-
 1. ブランチを切る<br>
     `main` ブランチから別ブランチを作成する
     ```sh
@@ -64,6 +52,63 @@ Workload Identity を使用しない場合の GitHub Actions のワークフロ�
     merge 処理後、`.github/workflows/terrafform-gke-workflow.yml` で定義したワークフローが実行され 、GKE 上の Web-API に対しての CI/CD が自動的に行われる。
 
 1. [GitHub リポジトリの Actions タブ](https://github.com/Yagami360/terraform-github-actions-aws-cicd-exercises/actions)から、実行されたワークフローのログを確認する
+    
+1. 【初回のみ】ArgoCD の設定<br>
+    GKE クラスタの作成と ArgoCD k8s リソースのデプロイが正常に行えた後に、
+
+    1. ArgoCD CLI をインストールする<br>
+        - MacOS の場合<br>    
+            ```sh
+            brew install argocd
+            ```
+
+        - Linux の場合<br>
+            ```sh
+            curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+            chmod +x /usr/local/bin/argocd
+            ```
+
+    1. ArgoCD API Server にログインする<br>
+        ```sh
+        kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+        sleep 30
+        ARGOCD_SERVER_DOMAIN=`kubectl describe service argocd-server --namespace argocd | grep "LoadBalancer Ingress" | awk '{print $3}'`
+        echo "ARGOCD_SERVER_DOMAIN : ${ARGOCD_SERVER_DOMAIN}"
+
+        # パスワード確認
+        ARGOCD_PASSWARD=`kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
+        echo "ArgoCD passward : ${ARGOCD_PASSWARD}"
+
+        # ログイン
+        argocd login ${ARGOCD_SERVER_DOMAIN} --username admin --password ${ARGOCD_PASSWARD}
+        ```
+
+    1. ArgoCD API Server にアクセスする<br>
+        ```sh
+        open "https://${ARGOCD_SERVER_DOMAIN}"
+        ```
+        - Username : `admin`
+        - Password : 以下のコマンドで取得可能
+            ```sh
+            ARGOCD_PASSWARD=`kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
+            echo "ArgoCD passward : ${ARGOCD_PASSWARD}"
+            ```
+
+    1. ArgoCD で管理する GKE クラスターを選択し設定する<br>
+        ```sh
+        K8S_CLUSTER_NAME=gke_${PROJECT_ID}_${ZONE}_${CLUSTER_NAME}
+        argocd cluster add ${K8S_CLUSTER_NAME}
+        ```
+
+    1. ArgoCD で管理する GitHub の k8s マニフェストファイルのフォルダーを設定する<br>
+        ```sh
+        kubectl apply -f k8s/argocd-app.yml
+        ```
+
+    1. ArgoCD と GitHub レポジトリの同期を行う<br>
+        ```sh
+        argocd app sync ${ARGOCD_APP_NAME}
+        ```
 
 1. GKE 上の Web-API に対して、リクエスト処理を行う<br>
     ```sh
