@@ -33,6 +33,18 @@ Workload Identity を使用しない場合の GitHub Actions のワークフロ�
 
     > `GCP_SA_KEY` の値は、`cat .key/${SERVICE_ACCOUNT_NAME}.json | base64` で取得できる
 
+1. 【初回のみ】ArgoCD CLI をインストールする<br>
+    - MacOS の場合<br>    
+        ```sh
+        brew install argocd
+        ```
+
+    - Linux の場合<br>
+        ```sh
+        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        chmod +x /usr/local/bin/argocd
+        ```
+
 1. ブランチを切る<br>
     `main` ブランチから別ブランチを作成する
     ```sh
@@ -89,6 +101,18 @@ Workload Identity を使用する場合の GitHub Actions のワークフロー�
     >     --workload-identity-pool=${WORKLOAD_IDENTITY_POOL_NAME} \
     >     --format='value(name)'
     > ```
+
+1. 【初回のみ】ArgoCD CLI をインストールする<br>
+    - MacOS の場合<br>    
+        ```sh
+        brew install argocd
+        ```
+
+    - Linux の場合<br>
+        ```sh
+        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        chmod +x /usr/local/bin/argocd
+        ```
 
 1. ブランチを切る<br>
     `main` ブランチから別ブランチを作成する

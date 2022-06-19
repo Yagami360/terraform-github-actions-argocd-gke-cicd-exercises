@@ -46,8 +46,8 @@ resource "google_project_service" "enable_cloudresourcemanager" {
 #-------------------------------
 # GKE クラスタ
 #-------------------------------
-resource "google_container_cluster" "fast_api_cluster" {
-  name     = "fast-api-cluster"
+resource "google_container_cluster" "fast_api_terraform_cluster" {
+  name     = "fast-api-terraform-cluster"
   location = "us-central1-b"
 #  node_locations = [   # マルチゾーンクラスタの場合
 #    "us-central1-a", "us-central1-b", "us-central1-f"
@@ -76,11 +76,11 @@ resource "google_container_cluster" "fast_api_cluster" {
 #-------------------------------
 resource "google_container_node_pool" "fast_api_cpu_pool" {
   name       = "fast-api-cpu-pool"
-  location   = "${google_container_cluster.fast_api_cluster.location}"
+  location   = "${google_container_cluster.fast_api_terraform_cluster.location}"
 #  node_locations = [   # マルチゾーンクラスタの場合
 #    "us-central1-a", "us-central1-b", "us-central1-f"
 #  ]
-  cluster    = "${google_container_cluster.fast_api_cluster.name}"
+  cluster    = "${google_container_cluster.fast_api_terraform_cluster.name}"
   
   node_count = "1"
   autoscaling {
