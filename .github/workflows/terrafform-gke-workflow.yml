@@ -114,19 +114,19 @@ jobs:
       # docker image 作成 & GCR に push
       #-----------------------------
       - name: 'docker pull from gcr for api'
-        if: steps.diff_api.outputs.diff == 'true'
+        if: steps.diff_api.outputs.diff
         run: "bash -c 'docker pull gcr.io/${PROJECT_ID}/${API_IMAGE_NAME}:latest || exit 0'"
       - name: 'docker build for api'
-        if: steps.diff_api.outputs.diff == 'true'
+        if: steps.diff_api.outputs.diff
         run: 'docker build -t gcr.io/${PROJECT_ID}/${API_IMAGE_NAME}:latest --cache-from gcr.io/${PROJECT_ID}/${API_IMAGE_NAME}:latest -f api/Dockerfile .'
       - name: 'docker push to gcr for api'
-        if: steps.diff_api.outputs.diff == 'true'
+        if: steps.diff_api.outputs.diff
         run: 'docker push gcr.io/${PROJECT_ID}/${API_IMAGE_NAME}:latest'
       #-----------------------------
       # terraform のインストール
       #-----------------------------
       - name: install terraform
-        if: steps.diff_tf.outputs.diff == 'true'
+        if: steps.diff_tf.outputs.diff
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.2.3
@@ -135,16 +135,16 @@ jobs:
       #-----------------------------
       # terraform init
       - name: terraform init for gke
-        if: steps.diff_tf.outputs.diff == 'true'
+        if: steps.diff_tf.outputs.diff
         run: terraform -chdir="terraform/gcp/gke" init
       # terraform plan
       - name: terraform plan for gke
-        if: steps.diff_tf.outputs.diff == 'true'
+        if: steps.diff_tf.outputs.diff
         id: plan
         run: terraform -chdir="terraform/gcp/gke" plan -out workspace.plan
       # PR に terraform plan の内容を投稿
       - name: post PR terraform plan for gke
-        if: always() && steps.diff_tf.outputs.diff == 'true' && github.event_name == 'pull_request'
+        if: always() && steps.diff_tf.outputs.diff && github.event_name == 'pull_request'
         uses: robburger/terraform-pr-commenter@v1
         with:
           commenter_type: plan
@@ -152,24 +152,24 @@ jobs:
           commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
       # terraform apply
       - name: terraform apply for gke
-        if: steps.diff_tf.outputs.diff == 'true' && github.event_name == 'push'
+        if: steps.diff_tf.outputs.diff && github.event_name == 'push'
         run: terraform -chdir="terraform/gcp/gke" apply workspace.plan
       #-----------------------------
       # 各種 k8s リソースを GKE にデプロイ
       #-----------------------------
       # kubectl コマンドのインストール
       - name: install kubectl
-        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff
         uses: azure/setup-kubectl@v1
       # 作成したクラスタに切り替える
       - name: get-credentials for gke clusters
-        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff
         run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID} --region ${ZONE}
       # API の k8s リソースのデプロイ
       - name: deploy k8s resources for api
-        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff
         run: kubectl apply -f k8s/fast_api.yml
       # ArgoCD の k8s リソースのデプロイ
       - name: deploy k8s resources for argocd
-        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff
         run: kubectl create namespace argocd || kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
