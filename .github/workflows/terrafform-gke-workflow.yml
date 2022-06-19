@@ -46,9 +46,11 @@ jobs:
     # 環境変数の設定
     #-----------------------------
     env:
-      PROJECT_ID: my-project2-303004
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # GitHub レポジトリへのアクセストークンを設定し、GitHub レポジトリへのコメントが可能にする / secrets は、github レポジトリの project の setting > secrets から登録する
+      PROJECT_ID: my-project2-303004
       API_IMAGE_NAME: fast-api-image-gke
+      CLUSTER_NAME: fast-api-terraform-cluster
+      REGION: us-central1
     #-----------------------------
     # ジョブの中で実行される一連のタスク
     #-----------------------------
@@ -123,7 +125,7 @@ jobs:
       # terraform のインストール
       #-----------------------------
       - name: install terraform
-#        if: steps.diff_tf.outputs.diff == 'true'
+        if: steps.diff_tf.outputs.diff == 'true'
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.2.3
@@ -171,7 +173,7 @@ jobs:
       # 作成したクラスタに切り替える
       - name: get-credentials for gke clusters
 #        if: steps.diff_k8s.outputs.diff == 'true'
-        run: gcloud container clusters get-credentials fast-api-terraform-cluster --project ${PROJECT_ID}
+        run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID} --region ${REGION}
       # API の k8s リソースのデプロイ
       - name: deploy k8s resources for api
 #        if: steps.diff_k8s.outputs.diff == 'true'
