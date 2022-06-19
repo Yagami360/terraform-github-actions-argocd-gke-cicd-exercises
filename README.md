@@ -5,6 +5,8 @@ GitHub Actions, Terraform, ArgoCD を使用してた GKE 上の Web-API の CI/C
 
 ### ◎ Workload Identity を使用しない場合
 
+[![terrafform workflow for gke](https://github.com/Yagami360/terraform-github-actions-argocd-gke-cicd-exercises/actions/workflows/terrafform-gke-workflow.yml/badge.svg)](https://github.com/Yagami360/terraform-github-actions-argocd-gke-cicd-exercises/actions/workflows/terrafform-gke-workflow.yml)
+
 Workload Identity を使用しない場合の GitHub Actions のワークフローは、`.github/workflows/terrafform-gke-workflow.yml` に定義している
 
 1. 【初回のみ】`*.tfstate` ファイルを保管するための GCS パケットを作成する<br>
@@ -63,7 +65,14 @@ Workload Identity を使用しない場合の GitHub Actions のワークフロ�
 
 1. [GitHub リポジトリの Actions タブ](https://github.com/Yagami360/terraform-github-actions-aws-cicd-exercises/actions)から、実行されたワークフローのログを確認する
 
+1. GKE 上の Web-API に対して、リクエスト処理を行う<br>
+    ```sh
+    sh resuest_api.sh
+    ```
+
 ### ◎ Workload Identity を使用する場合
+
+[![terrafform workflow for gke with workload identity](https://github.com/Yagami360/terraform-github-actions-argocd-gke-cicd-exercises/actions/workflows/terrafform-gke-workflow_wi.yml/badge.svg)](https://github.com/Yagami360/terraform-github-actions-argocd-gke-cicd-exercises/actions/workflows/terrafform-gke-workflow_wi.yml)
 
 Workload Identity を使用する場合の GitHub Actions のワークフローは、`.github/workflows/terrafform-gke-workflow_wl.yml` に定義している
 
@@ -131,3 +140,8 @@ Workload Identity を使用する場合の GitHub Actions のワークフロー�
     merge 処理後、`.github/workflows/terrafform-gke-workflow_wl.yml` で定義したワークフローが実行され 、GKE 上の Web-API に対しての CI/CD が自動的に行われる。
 
 1. [GitHub リポジトリの Actions タブ](https://github.com/Yagami360/terraform-github-actions-aws-cicd-exercises/actions)から、実行されたワークフローのログを確認する
+
+1. GKE 上の Web-API に対して、リクエスト処理を行う<br>
+    ```sh
+    sh resuest_api.sh
+    ```

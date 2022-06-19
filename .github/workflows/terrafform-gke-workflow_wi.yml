@@ -173,4 +173,4 @@ jobs:
       # ArgoCD の k8s リソースのデプロイ
       - name: deploy k8s resources for argocd
         if: steps.diff_k8s.outputs.diff == 'true'
-        run: kubectl create namespace argocd && kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        run: kubectl create namespace argocd || kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml

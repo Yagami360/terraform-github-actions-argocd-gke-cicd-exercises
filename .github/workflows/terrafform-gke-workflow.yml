@@ -159,17 +159,17 @@ jobs:
       #-----------------------------
       # kubectl コマンドのインストール
       - name: install kubectl
-#        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff == 'true'
         uses: azure/setup-kubectl@v1
       # 作成したクラスタに切り替える
       - name: get-credentials for gke clusters
-#        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff == 'true'
         run: gcloud container clusters get-credentials ${CLUSTER_NAME} --project ${PROJECT_ID} --region ${ZONE}
       # API の k8s リソースのデプロイ
       - name: deploy k8s resources for api
-#        if: steps.diff_k8s.outputs.diff == 'true'
+        if: steps.diff_k8s.outputs.diff == 'true'
         run: kubectl apply -f k8s/fast_api.yml
       # ArgoCD の k8s リソースのデプロイ
       - name: deploy k8s resources for argocd
-#        if: steps.diff_k8s.outputs.diff == 'true'
-        run: kubectl create namespace argocd && kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        if: steps.diff_k8s.outputs.diff == 'true'
+        run: kubectl create namespace argocd || kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
