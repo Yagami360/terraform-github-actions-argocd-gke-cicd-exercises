@@ -158,7 +158,7 @@ jobs:
       #-----------------------------
       # kubectl コマンドのインストール
       - name: install kubectl
-        if: steps.diff_k8s.outputs.diff == 'true'
+#        if: steps.diff_k8s.outputs.diff == 'true'
         uses: azure/setup-kubectl@v1
 #      - name: install and configure kubectl
 #        run: |
@@ -172,7 +172,7 @@ jobs:
 #          echo ${{ secrets.KUBECONFIG }} | base64 --decode > kubeconfig.yaml
       # 作成したクラスタに切り替える
       - name: get-credentials for gke clusters
-        if: steps.diff_k8s.outputs.diff == 'true'
+#        if: steps.diff_k8s.outputs.diff == 'true'
         run: gcloud container clusters get-credentials fast-api-terraform-cluster --project ${PROJECT_ID}
       # API の k8s リソースのデプロイ
       - name: deploy k8s resources for api
