@@ -4,6 +4,13 @@
 provider "google" {
   project = "my-project2-303004"
   region  = "us-central1"
+  zone    = "us-central1-c"
+}
+
+provider "google-beta" {
+  project = "my-project2-303004"
+  region  = "us-central1"
+  zone    = "us-central1-c"
 }
 
 #-------------------------------
@@ -42,6 +49,7 @@ resource "google_service_account" "github_actions_service_account" {
 
 # GitHub Actions 用のサービスアカウントの IAM 権限設定（サービスアカウントに必要な権限を付与する）
 resource "google_project_iam_member" "github_actions_iam" {
+  project = "my-project2-303004"
   role    = "roles/owner"
   member  = "serviceAccount:${google_service_account.github_actions_service_account.email}"
 }

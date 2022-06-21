@@ -7,6 +7,13 @@ provider "google" {
   zone = "us-central1-b"
 }
 
+# Spot VM 使用時は必要
+#provider "google-beta" {
+#  project = "my-project2-303004"
+#  region  = "us-central1"
+#  zone    = "us-central1-c"
+#}
+
 #-------------------------------
 # 実行する Terraform 環境情報
 #-------------------------------
@@ -48,8 +55,8 @@ resource "google_project_service" "enable_cloudresourcemanager" {
 #-------------------------------
 resource "google_container_cluster" "fast_api_terraform_cluster" {
   name     = "fast-api-terraform-cluster"
-  location = "us-central1-b"
-#  node_locations = [   # マルチゾーンクラスタの場合
+  location = "us-central1-b"    # 単一リージョンでのクラスタの場合は ZONE を指定。マルチゾーンクラスタの場合は REGION を指定
+#  node_locations = [           # マルチゾーンクラスタの場合指定
 #    "us-central1-a", "us-central1-b", "us-central1-f"
 #  ]
 
@@ -75,6 +82,7 @@ resource "google_container_cluster" "fast_api_terraform_cluster" {
 # ノードプール
 #-------------------------------
 resource "google_container_node_pool" "fast_api_cpu_pool" {
+#  provider                  = google-beta   # SpotVM 使用時
   name       = "fast-api-cpu-pool"
   location   = "${google_container_cluster.fast_api_terraform_cluster.location}"
 #  node_locations = [   # マルチゾーンクラスタの場合

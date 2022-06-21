@@ -3,6 +3,7 @@
 ROOT_DIR=${PWD}
 PROJECT_ID=my-project2-303004
 CONTAINER_NAME="terraform-gcp-container"
+SERVICE_ACCOUNT_NAME=github-actions-sa
 
 #-----------------------------
 # terraform
@@ -31,3 +32,11 @@ docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform apply"
 
 # terraform が作成したオブジェクトの内容を確認
 docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform show"
+
+#-----------------------------
+# サービスアカウントの秘密鍵 (json) を生成する
+#-----------------------------
+rm -rf .key
+mkdir -p .key
+gcloud iam service-accounts keys create .key/${SERVICE_ACCOUNT_NAME}.json --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
+echo "GCP_SA_KEY : `cat .key/${SERVICE_ACCOUNT_NAME}.json | base64`"

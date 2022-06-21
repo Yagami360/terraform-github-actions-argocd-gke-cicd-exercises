@@ -2,9 +2,9 @@
 #set -eu
 ROOT_DIR=${PWD}
 PROJECT_ID=my-project2-303004
-SERVICE_ACCOUNT_NAME=github-actions-sa-2
-WORKLOAD_IDENTITY_POOL_NAME=github-actions-pool-2
-WORKLOAD_IDENTITY_PROVIDER_NAME=github-actions-provider-2
+SERVICE_ACCOUNT_NAME=github-actions-sa
+WORKLOAD_IDENTITY_POOL_NAME=github-actions-pool
+WORKLOAD_IDENTITY_PROVIDER_NAME=github-actions-provider
 GITHUB_REPOSITORY_NAME=terraform-github-actions-argocd-gke-cicd-exercises
 
 # サービスアカウント作成権限のある個人アカウントに変更
@@ -25,8 +25,7 @@ gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:${
 rm -rf ${ROOT_DIR}/.key
 mkdir -p ${ROOT_DIR}/.key
 gcloud iam service-accounts keys create ${ROOT_DIR}/.key/${SERVICE_ACCOUNT_NAME}.json --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
-echo "GCP_SA_KEY (cat ${SERVICE_ACCOUNT_NAME}.json | base64) : "
-cat ${ROOT_DIR}/.key/${SERVICE_ACCOUNT_NAME}.json | base64
+echo "GCP_SA_KEY : `cat .key/${SERVICE_ACCOUNT_NAME}.json | base64`"
 
 # サービスアカウントの一時的な認証情報を作成できるようにするために、IAM Service Account Credentials APIを有効化
 gcloud services enable iamcredentials.googleapis.com --project ${PROJECT_ID}
