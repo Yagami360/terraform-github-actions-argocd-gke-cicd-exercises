@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fast-api-terraform-cluster-argocd-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Yagami360/terraform-github-actions-argocd-gke-cicd-exercises.git
+#    repoURL: git@github.com:Yagami360/terraform-github-actions-argocd-gke-cicd-exercises.git
+    targetRevision: main
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: {}
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: github-repository-secret
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repo-creds    # ArgoCDは argocd.argoproj.io/secret-type が repo-creds の Secret リソースを Repository Credentialsとして取り扱う
+stringData:
+  type: git
+  # https アクセスの場合は、ユーザー名とパスワードを設定
+  url: https://github.com/Yagami360/terraform-github-actions-argocd-gke-cicd-exercises
+  password: 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    # GitHub のパーソナルアクセストークン
+  username: Yagami360
+#  ssh アクセスの場合は、ssh 秘密鍵（cat ~.ssh/id_rsa）を設定
+#  url: git@github.com:Yagami360/terraform-github-actions-argocd-gke-cicd-exercises.git
+#  sshPrivateKey: |   
+#    -----BEGIN OPENSSH PRIVATE KEY-----
+#    ...
+#    -----END OPENSSH PRIVATE KEY-----

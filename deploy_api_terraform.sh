@@ -5,9 +5,12 @@ CONTAINER_NAME="terraform-gcp-container"
 PROJECT_ID=my-project2-303004
 REGION=us-central1
 ZONE=us-central1-b
+SERVICE_ACCOUNT_NAME=github-actions-sa
 CLUSTER_NAME=fast-api-terraform-cluster
 API_IMAGE_NAME="fast-api-image-gke"
 ARGOCD_APP_NAME="fast-api-terraform-cluster-argocd-app"
+#USE_PRIVATE_REPOSITORY=0
+USE_PRIVATE_REPOSITORY=1
 
 #-----------------------------
 # gcloud コマンドをインストールする
@@ -65,11 +68,14 @@ echo "kubectl version : `kubectl version`"
 #-----------------------------
 # ArgoCD CLI のインストール
 #-----------------------------
-if [ ${OS} = "Mac" ] ; then
-    brew install argocd
-elif [ ${OS} = "Linux" ] ; then
-    curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    chmod +x /usr/local/bin/argocd
+argocd version --client &> /dev/null
+if [ $? -ne 0 ] ; then
+    if [ ${OS} = "Mac" ] ; then
+        brew install argocd
+    elif [ ${OS} = "Linux" ] ; then
+        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        chmod +x /usr/local/bin/argocd
+    fi
 fi
 
 echo "argocd version : `argocd version`"
@@ -101,7 +107,7 @@ docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gcs && terraform init"
 docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gcs && terraform plan"
 
 # 定義を適用してインスタンスを作成する
-docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gcs && terraform apply"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gcs && terraform apply -auto-approve"
 
 # terraform が作成したオブジェクトの内容を確認
 docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gcs && terraform show"
@@ -110,16 +116,24 @@ docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gcs && terraform show"
 # GitHub Actions 用サービスアカウントを作成する
 #-----------------------------
 # terraform を初期化する。
-#docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform init"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform init"
 
 # 作成したテンプレートファイルの定義内容を確認する
-#docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform plan"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform plan"
 
 # 定義を適用してインスタンスを作成する
-#docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform apply"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform apply -auto-approve"
 
 # terraform が作成したオブジェクトの内容を確認
-#docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform show"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/iam && terraform show"
+
+# サービスアカウントの秘密鍵 (json) を生成する
+if [ ! -e "${ROOT_DIR}/.key/${SERVICE_ACCOUNT_NAME}.json" ] ; then
+    rm -f ${ROOT_DIR}/.key/${SERVICE_ACCOUNT_NAME}.json
+    mkdir -p ${ROOT_DIR}/.key
+    gcloud iam service-accounts keys create ${ROOT_DIR}/.key/${SERVICE_ACCOUNT_NAME}.json --iam-account=${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
+    echo "GCP_SA_KEY : `cat ${ROOT_DIR}/.key/${SERVICE_ACCOUNT_NAME}.json | base64`"
+fi
 
 #-----------------------------
 # docker image を GCR に push
@@ -138,7 +152,7 @@ docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gke && terraform init"
 docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gke && terraform plan"
 
 # 定義を適用してインスタンスを作成する
-docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gke && terraform apply"
+docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gke && terraform apply -auto-approve"
 
 # terraform が作成したオブジェクトの内容を確認
 docker exec -it ${CONTAINER_NAME} /bin/sh -c "cd gcp/gke && terraform show"
@@ -154,14 +168,13 @@ kubectl apply -f k8s/fast_api.yml
 
 # ArgoCD の k8s リソースのデプロイ
 kubectl create namespace argocd || kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
-sleep 60
+sleep 30
 
 #-----------------------------
 # ArgoCD API Server にログインする
 #-----------------------------
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-sleep 30
+sleep 120
 ARGOCD_SERVER_DOMAIN=`kubectl describe service argocd-server --namespace argocd | grep "LoadBalancer Ingress" | awk '{print $3}'`
 echo "ARGOCD_SERVER_DOMAIN : ${ARGOCD_SERVER_DOMAIN}"
 
@@ -178,10 +191,18 @@ argocd login ${ARGOCD_SERVER_DOMAIN} --username admin --password ${ARGOCD_PASSWA
 # ArgoCD で管理するクラスターを選択し設定する
 K8S_CLUSTER_NAME=gke_${PROJECT_ID}_${ZONE}_${CLUSTER_NAME}
 #K8S_CLUSTER_NAME=`argocd cluster add | grep ${CLUSTER_NAME} | awk '{print $2}'`
-argocd cluster add ${K8S_CLUSTER_NAME}
+argocd cluster add -y ${K8S_CLUSTER_NAME}
+
+# ArgoCD にプライベートレポジトリを追加
+#if [ ! ${USE_PRIVATE_REPOSITORY} = 0 ] ; then
+#    argocd repo add "git@github.com:Yagami360/terraform-github-actions-argocd-gke-cicd-exercises.git" --ssh-private-key-path "${HOME}/.ssh/id_rsa" --insecure-skip-server-verification
+#fi
 
 # ArgoCD で管理する GitHub の k8s マニフェストファイルのフォルダーを設定
-kubectl apply -f k8s/argocd-app.yml
+if [ ! ${USE_PRIVATE_REPOSITORY} = 0 ] ; then
+    kubectl apply -f k8s/argocd-app-private.yml
+else
+    kubectl apply -f k8s/argocd-app.yml
 
 # ArgoCD と GitHub レポジトリの同期を行う
 argocd app sync ${ARGOCD_APP_NAME}
