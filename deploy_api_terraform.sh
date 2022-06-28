@@ -200,7 +200,7 @@ ARGOCD_PASSWARD=`kubectl -n argocd get secret argocd-initial-admin-secret -o jso
 echo "ArgoCD passward : ${ARGOCD_PASSWARD}"
 
 # ログイン
-argocd login ${ARGOCD_SERVER_DOMAIN} --username admin --password ${ARGOCD_PASSWARD}
+argocd login ${ARGOCD_SERVER_DOMAIN} --username admin --password ${ARGOCD_PASSWARD} --insecure
 
 #-----------------------------
 # ArgoCD で管理したい k8s マニフェストファイルと Git リポジトリーの同期を行う
